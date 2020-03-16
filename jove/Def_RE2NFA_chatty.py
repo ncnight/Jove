@@ -118,12 +118,14 @@ def p_expression_plus_id(t):
     '''expression : catexp'''
     # Simply inherit the attribute from t[1] and pass on    
     t[0] = t[1] 
+    print('Production rule applied: exp -> catexp')
 
 #-- * The C -> C O production
 
 def p_expression_cat(t):
     '''catexp :  catexp ordyexp'''
     t[0] = mk_cat_nfa(t[1], t[2])
+    print('Production rule applied: catexp -> catexp ordyexp')
 
 def mk_cat_nfa(N1, N2):
     delta_accum = dict({}) 
@@ -156,12 +158,14 @@ def p_expression_cat_id(t):
     '''catexp :  ordyexp'''
     # Simply inherit the attribute from t[1] and pass on
     t[0] = t[1]
+    print('Production rule applied: catexp -> ordyexp')
 
 #-- * The O -> O STAR production
 
 def p_expression_ordy_star(t):
     'ordyexp : ordyexp STAR'
     t[0] = mk_star_nfa(t[1])
+    print('Production rule applied: ordyexp -> ordyexp STAR')
 
 def mk_star_nfa(N):
     # Follow construction from Kozen's book:
@@ -199,12 +203,14 @@ def p_expression_ordy_paren(t):
     'ordyexp : LPAREN expression RPAREN'
     # Simply inherit the attribute from t[2] and pass on
     t[0] = t[2]
+    print('Production rule applied: ordyexp -> LPAREN exp RPAREN')
 
 #-- * The O -> EPS production
     
 def p_expression_ordy_eps(t):
     'ordyexp : EPS'
     t[0] = mk_eps_nfa()
+    print('Production rule applied: ordyexp -> eps')
 
 def mk_eps_nfa():
     """An nfa with exactly one start+final state
@@ -222,6 +228,7 @@ def mk_eps_nfa():
 def p_expression_ordy_str(t):
     'ordyexp : STR'
     t[0] = mk_symbol_nfa(t[1])
+    print('Production rule applied: ordyexp -> str')
 
 def mk_symbol_nfa(a):
     """The NFA for a single re letter
