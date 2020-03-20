@@ -59,7 +59,7 @@ t_ignore = " \t"
 #-- Upon new lines, increase the lexer's line count variable
 def t_newline(t):
     r'\n+'
-    print("getting newline")
+    print("Received newline")
     t.lexer.lineno += t.value.count("\n")
 
 #-- Lexer's error announcer for illegal characters
@@ -91,6 +91,7 @@ precedence = (
 #---------------------------------------------------------------------
 
 #-- * The E -> E + C production
+
 
 def p_expression_plus(t):
     '''expression : expression PLUS catexp'''
@@ -124,10 +125,11 @@ def p_expression_plus_id(t):
 
 def p_expression_cat(t):
     '''catexp :  catexp ordyexp'''
-    t[0] = mk_cat_nfa(t[1], t[2])
     print('Production rule applied: catexp -> catexp ordyexp')
+    t[0] = mk_cat_nfa(t[1], t[2])
 
 def mk_cat_nfa(N1, N2):
+    print('Given the parse of two NFA, concatenate the first NFA to the second NFA')
     delta_accum = dict({}) 
     delta_accum.update(N1["Delta"])
     delta_accum.update(N2["Delta"])
@@ -157,15 +159,15 @@ def mk_cat_nfa(N1, N2):
 def p_expression_cat_id(t):
     '''catexp :  ordyexp'''
     # Simply inherit the attribute from t[1] and pass on
-    t[0] = t[1]
     print('Production rule applied: catexp -> ordyexp')
+    t[0] = t[1]
 
 #-- * The O -> O STAR production
 
 def p_expression_ordy_star(t):
     'ordyexp : ordyexp STAR'
-    t[0] = mk_star_nfa(t[1])
     print('Production rule applied: ordyexp -> ordyexp STAR')
+    t[0] = mk_star_nfa(t[1])
 
 def mk_star_nfa(N):
     # Follow construction from Kozen's book:
@@ -175,6 +177,7 @@ def mk_star_nfa(N):
     # 3) Make N[F] non-final
     # 4) Spin back from every state in N[F] to Q0
     #
+    print('Given the parse of an NFA, STAR it\'s language')
     delta_accum = dict({})
     IF = NxtStateStr()
     Q0 = set({ IF }) # new set of start + final states
@@ -209,12 +212,13 @@ def p_expression_ordy_paren(t):
     
 def p_expression_ordy_eps(t):
     'ordyexp : EPS'
-    t[0] = mk_eps_nfa()
     print('Production rule applied: ordyexp -> eps')
+    t[0] = mk_eps_nfa()
 
 def mk_eps_nfa():
     """An nfa with exactly one start+final state
     """
+    print('Create NFA with one start and final state (Epsilon NFA)')
     Q0 = set({ NxtStateStr() })
     F  = Q0
     return mk_nfa(Q     = Q0, 
@@ -227,12 +231,13 @@ def mk_eps_nfa():
 
 def p_expression_ordy_str(t):
     'ordyexp : STR'
-    t[0] = mk_symbol_nfa(t[1])
     print('Production rule applied: ordyexp -> str')
+    t[0] = mk_symbol_nfa(t[1])
 
 def mk_symbol_nfa(a):
     """The NFA for a single re letter
     """
+    print('Given a single re letter, create an NFA that only accepts that re letter')
     # Make a fresh initial state
     q0 = NxtStateStr()
     Q0 = set({ q0 })

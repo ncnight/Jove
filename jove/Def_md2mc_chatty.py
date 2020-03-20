@@ -89,6 +89,7 @@ t_ignore = " \t"
 
 def t_NEWLINE(t):
     r'\n+'
+    print('Got a new line character')
     global LINENO
     if LINENO==-1:
         LINENO = 2
@@ -482,11 +483,13 @@ def p_dfa_md(t):
 def p_nfa_md(t):
     '''md : NFA lines'''
     global LINENO
+    print('Parsed NFA keyword')
     LINENO = -1 # restore for next error processing
     t[0] = ('NFA', get_machine_components(t[2], 'NFA'))
 
 def p_pda_md(t):
     '''md : PDA lines'''
+    print('Parsed PDA keyword')
     mc = get_machine_components(t[2], 'PDA')
     (From_s, To_s,
      G_in,   G_out,
@@ -499,6 +502,7 @@ def p_pda_md(t):
     
 def p_tm_md(t):
     '''md : TM lines'''
+    print('Parsed TM keyword')
     mc = get_machine_components(t[2], 'TM')
     (From_s, To_s,
      G_in,   G_out,
@@ -515,10 +519,12 @@ def p_tm_md(t):
     
 def p_lines1(t):
     '''lines : one_line'''
+    print('Production rule applied: lines -> one_line', 'Convert line\'s attribute to a dict')
     t[0] = [ t[1] ] # One line's attribute is a dict
     
 def p_lines2(t):
     '''lines : one_line lines'''
+    print('Production rule applied: lines -> one_line lines', 'Parse a list of line attrs')
     one_line_attr = [ t[1] ]
     lines_attr    = t[2]
     t[0] = one_line_attr + lines_attr # List of line attrs
@@ -526,6 +532,7 @@ def p_lines2(t):
 def p_one_line(t):
     '''one_line : state COLON labels ARROW states'''
     print("Parsed one line of Jove MD code, involving tokens COLON and ARROWS and other things in an MD line")
+    print('Production rule applied: one_line -> state COLON labels ARROW states')
     lineattr  = default_line_attr()
     lineattr["FromState"] = t[1]
     lineattr["ToStates"]  = t[5]
@@ -544,24 +551,29 @@ def p_one_line(t):
 
 def p_state(t):
     '''state : ID'''
+    print('Production rule applied: state -> ID', 'Converts state to a list') 
     t[0] = [ t[1] ]
 
 def p_states1(t):
     '''states : state'''
+    print('Production rule applied: states : state')
     t[0] = t[1] 
     
 def p_states2(t):
     '''states : state COMMA states'''
+    print('Production rule applied: states -> state COMMA states')
     t[0] = t[1] + t[3]
 
 def p_labels1(t):
     '''labels : one_label'''
+    print('Production rule applied: labels -> one_label')
     t[0] = t[1]
     
 def p_labels2(t):
     '''labels : one_label OR labels'''
     # Combine SigmaEps, GammaIn, GammaOut, HeadDirn labels 
     # component-wise
+    print('Production rule applied: labels -> one_label OR labels')
     L1 = t[1]
     Ls = t[3]
     lineattr = default_line_attr()
@@ -577,6 +589,7 @@ def p_labels2(t):
 # A label for a TM is  ID_or_B ; ID_or_B , ID  where the last ID is L,R,S
 def p_one_label1(t):
     '''one_label : ID_or_EPS_or_B'''
+    print('Production rule applied: one_label -> ID_or_EPS_or_B')
     t[0] = t[1]
     
 def p_ID_or_EPS_or_B(t):
@@ -586,9 +599,13 @@ def p_ID_or_EPS_or_B(t):
     id = t[1]
     #--sanitize forms of epsilon after parsing
     if id=='""':
+        print('Production rule applied: ID_or_EPS_or_B -> EPS')
         id = ""
     elif id=="''":
+        print('Production rule applied: ID_or_EPS_or_B -> EPS')
         id = ''
+    else:
+        print('Production rule applied: ID_or_EPS_or_B -> ID')
     #--
     print("Got one label of a DFA, which is an ID, that being", id)
     lineattr = default_line_attr()
@@ -607,6 +624,7 @@ def p_one_label2(t):
     # GammaIn coming in via t[3], and
     # GammaOut coming in via t[5].
     #
+    print("Production rule applied: one_label -> ID_or_EPS_or_B COMMA ID_or_EPS_or_B SEMICOLON ID_or_EPS_or_B")
     lineattr = t[1]
     lineattr.update({ "GammaIn" : t[3]["SigmaEps"]  })
     lineattr.update({ "GammaOut": t[5]["SigmaEps"] })
@@ -631,6 +649,7 @@ def p_one_label3(t):
     # GammaOut coming in via t[3].
     # We can check for t[5] being L,R,S.
     #
+    print('Production rule applied: one_label -> ID_or_EPS_or_B SEMICOLON ID_or_EPS_or_B COMMA ID_or_EPS_or_B')
     lineattr = t[1] # Contains the SigmaEps attribute coming in
     lineattr.update({ "GammaIn" : lineattr["SigmaEps"] }) #shift to G_in
     lineattr.update({ "GammaOut": t[3]["SigmaEps"] })     #shift to G_out
